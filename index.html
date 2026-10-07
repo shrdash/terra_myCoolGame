@@ -1,0 +1,1910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TERRA // OUTPOST 84 — Planetary Terraforming Spreadsheet</title>
+  <style>
+    :root {
+      --sheet-green: #0f9d58;
+      --sheet-green-dark: #0b8043;
+      --sheet-green-light: #e6f4ea;
+      --sheet-border: #e0e0e0;
+      --sheet-header-bg: #f8f9fa;
+      --sheet-header-text: #5f6368;
+      --sheet-selected-border: #1a73e8;
+      --sheet-selected-bg: rgba(26, 115, 232, 0.08);
+      --dark-text: #202124;
+      --muted-text: #5f6368;
+      --bg-canvas: #ffffff;
+      --danger: #d93025;
+      --warning: #f29900;
+      --success: #1e8e3e;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      font-family: var(--font-family);
+      color: var(--dark-text);
+      background-color: #f1f3f4;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      font-size: 13px;
+    }
+
+    /* Top Navigation & App Bar */
+    .app-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--sheet-border);
+      padding: 6px 12px 2px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .app-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .title-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sheets-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--sheet-green);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    }
+
+    .sheet-title-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sheet-doc-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #202124;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge-status {
+      font-size: 10px;
+      background: #e8f0fe;
+      color: #1a73e8;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+
+    .menu-bar {
+      display: flex;
+      gap: 14px;
+      font-size: 12px;
+      color: var(--muted-text);
+      margin-top: 2px;
+    }
+
+    .menu-item {
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 2px;
+    }
+
+    .menu-item:hover {
+      background: #f1f3f4;
+      color: var(--dark-text);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--sheet-border);
+      background: #ffffff;
+      color: var(--dark-text);
+      transition: all 0.15s ease;
+    }
+
+    .btn:hover {
+      background: #f8f9fa;
+      border-color: #c6c6c6;
+    }
+
+    .btn-primary {
+      background: var(--sheet-green);
+      color: white;
+      border-color: var(--sheet-green);
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
+      background: var(--sheet-green-dark);
+      border-color: var(--sheet-green-dark);
+    }
+
+    .btn-accent {
+      background: #1a73e8;
+      color: white;
+      border-color: #1a73e8;
+    }
+
+    .btn-accent:hover {
+      background: #1557b0;
+    }
+
+    /* Toolbar Ribbon */
+    .ribbon-toolbar {
+      background: #edf2fa;
+      border-bottom: 1px solid var(--sheet-border);
+      padding: 4px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow-x: auto;
+    }
+
+    .ribbon-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .ribbon-divider {
+      width: 1px;
+      height: 20px;
+      background: #dadce0;
+      margin: 0 4px;
+    }
+
+    .facility-chip {
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid #c8d4e5;
+      background: #ffffff;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+
+    .facility-chip:hover {
+      background: #e8f0fe;
+      border-color: #1a73e8;
+      transform: translateY(-1px);
+    }
+
+    .facility-chip.active {
+      background: #1a73e8;
+      color: white;
+      border-color: #1a73e8;
+    }
+
+    /* Formula Bar */
+    .formula-bar-container {
+      background: #ffffff;
+      border-bottom: 1px solid var(--sheet-border);
+      display: flex;
+      align-items: center;
+      padding: 3px 8px;
+      gap: 8px;
+    }
+
+    .cell-coord-box {
+      width: 55px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px;
+      border: 1px solid #dadce0;
+      border-radius: 2px;
+      background: #fafafa;
+    }
+
+    .fx-symbol {
+      color: var(--muted-text);
+      font-style: italic;
+      font-weight: bold;
+      font-size: 14px;
+      padding: 0 4px;
+    }
+
+    .formula-input {
+      flex: 1;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 4px 8px;
+      border: 1px solid transparent;
+      outline: none;
+      background: transparent;
+      color: #202124;
+    }
+
+    .formula-input:focus {
+      background: #ffffff;
+      border: 1px solid var(--sheet-selected-border);
+      border-radius: 2px;
+    }
+
+    /* Main Workbook Container */
+    .workbook-body {
+      flex: 1;
+      display: flex;
+      position: relative;
+      overflow: hidden;
+      background: #ffffff;
+    }
+
+    .sheet-view {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      overflow: auto;
+      position: relative;
+    }
+
+    .sheet-view.active {
+      display: flex;
+    }
+
+    /* Surface Grid View */
+    .grid-wrapper {
+      display: flex;
+      flex-direction: column;
+      min-width: 100%;
+      min-height: 100%;
+    }
+
+    .spreadsheet-table {
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: #ffffff;
+    }
+
+    .spreadsheet-table th,
+    .spreadsheet-table td {
+      border: 1px solid var(--sheet-border);
+      padding: 0;
+      text-align: center;
+      vertical-align: middle;
+      position: relative;
+    }
+
+    /* Header styling */
+    .corner-header {
+      width: 45px;
+      height: 24px;
+      background: var(--sheet-header-bg);
+      border-right: 1px solid #c6c6c6 !important;
+      border-bottom: 1px solid #c6c6c6 !important;
+    }
+
+    .col-header {
+      height: 24px;
+      width: 65px;
+      background: var(--sheet-header-bg);
+      color: var(--sheet-header-text);
+      font-weight: 600;
+      font-size: 11px;
+      user-select: none;
+      border-bottom: 1px solid #c6c6c6 !important;
+    }
+
+    .row-header {
+      width: 45px;
+      height: 30px;
+      background: var(--sheet-header-bg);
+      color: var(--sheet-header-text);
+      font-weight: 600;
+      font-size: 11px;
+      user-select: none;
+      border-right: 1px solid #c6c6c6 !important;
+    }
+
+    .grid-cell {
+      height: 30px;
+      width: 65px;
+      cursor: cell;
+      position: relative;
+      font-size: 11px;
+      font-weight: 600;
+      transition: background-color 0.2s;
+    }
+
+    .grid-cell.selected {
+      outline: 2px solid var(--sheet-selected-border);
+      outline-offset: -2px;
+      z-index: 5;
+    }
+
+    .grid-cell.selected::after {
+      content: "";
+      position: absolute;
+      bottom: -3px;
+      right: -3px;
+      width: 6px;
+      height: 6px;
+      background: var(--sheet-selected-border);
+      border: 1px solid white;
+      z-index: 6;
+      cursor: crosshair;
+    }
+
+    /* Terrain Color Classes */
+    .terrain-regolith { background-color: #fef3c7; color: #92400e; }
+    .terrain-ridge { background-color: #e5e7eb; color: #374151; }
+    .terrain-basin { background-color: #fed7aa; color: #7c2d12; }
+    .terrain-fissure { background-color: #fecaca; color: #b91c1c; }
+    .terrain-glacier { background-color: #e0f2fe; color: #0369a1; }
+    .terrain-ocean { background-color: #bfdbfe; color: #1d4ed8; }
+    .terrain-biome { background-color: #d1fae5; color: #047857; }
+
+    /* Facility Badges inside Cells */
+    .facility-badge {
+      display: inline-block;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 700;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .badge-SP { background: #f59e0b; color: #000; }
+    .badge-GD { background: #ea580c; color: #fff; }
+    .badge-IH { background: #0284c7; color: #fff; }
+    .badge-TF { background: #8b5cf6; color: #fff; }
+    .badge-AG { background: #10b981; color: #fff; }
+    .badge-AS { background: #06b6d4; color: #fff; }
+    .badge-HB { background: #6366f1; color: #fff; }
+    .badge-MS { background: #ec4899; color: #fff; }
+
+    /* Telemetry Bar Under Map */
+    .kpi-deck {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-top: 1px solid var(--sheet-border);
+    }
+
+    .kpi-card {
+      background: #ffffff;
+      border: 1px solid var(--sheet-border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .kpi-label {
+      font-size: 11px;
+      color: var(--muted-text);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .kpi-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--dark-text);
+      font-family: var(--font-mono);
+    }
+
+    .kpi-sub {
+      font-size: 10px;
+      color: var(--muted-text);
+      margin-top: 2px;
+    }
+
+    /* Table Views for Telemetry & Formulas */
+    .data-table-container {
+      padding: 20px;
+      max-width: 1000px;
+    }
+
+    .standard-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      background: #ffffff;
+      border: 1px solid var(--sheet-border);
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .standard-table th {
+      background: #f1f3f4;
+      text-align: left;
+      padding: 10px 14px;
+      font-weight: 600;
+      color: var(--muted-text);
+      border-bottom: 2px solid var(--sheet-border);
+    }
+
+    .standard-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--sheet-border);
+      font-family: var(--font-mono);
+    }
+
+    .standard-table tr:hover {
+      background: #f8f9fa;
+    }
+
+    .formula-tag {
+      background: #e8eaed;
+      color: #1a73e8;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    /* Bottom Tab Bar */
+    .tab-bar-container {
+      background: #ffffff;
+      border-top: 1px solid var(--sheet-border);
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      height: 38px;
+      gap: 4px;
+      overflow-x: auto;
+    }
+
+    .tab-control-btn {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      color: var(--muted-text);
+      cursor: pointer;
+    }
+
+    .tab-control-btn:hover {
+      background: #f1f3f4;
+    }
+
+    .sheet-tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted-text);
+      cursor: pointer;
+      border-top: 2px solid transparent;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .sheet-tab:hover {
+      background: #f8f9fa;
+      color: var(--dark-text);
+    }
+
+    .sheet-tab.active {
+      color: var(--sheet-green-dark);
+      border-bottom-color: var(--sheet-green);
+      background: #ffffff;
+      font-weight: 600;
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(2px);
+    }
+
+    .modal-dialog {
+      background: #ffffff;
+      width: 90%;
+      max-width: 680px;
+      max-height: 85vh;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--sheet-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8f9fa;
+    }
+
+    .modal-header h3 {
+      font-size: 16px;
+      color: #202124;
+    }
+
+    .modal-close {
+      cursor: pointer;
+      font-size: 20px;
+      color: var(--muted-text);
+      border: none;
+      background: none;
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .code-box {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 14px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      overflow-x: auto;
+      margin: 10px 0;
+      max-height: 250px;
+    }
+
+    .alert-banner {
+      background: #fef7e0;
+      border-left: 4px solid var(--warning);
+      padding: 10px 14px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      font-size: 12px;
+    }
+
+    /* Incident Drawer / Toasts */
+    .incident-ticker {
+      background: #202124;
+      color: #ffffff;
+      padding: 6px 14px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .ticker-alert {
+      color: #fbbc04;
+      font-weight: bold;
+    }
+
+    /* Habitability Meter */
+    .progress-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--sheet-green);
+      transition: width 0.4s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Application Bar -->
+  <header class="app-header">
+    <div class="app-title-row">
+      <div class="title-left">
+        <div class="sheets-icon">⊞</div>
+        <div class="sheet-title-info">
+          <div class="sheet-doc-name">
+            TERRA // OUTPOST 84 — Planetary Terraforming Matrix
+            <span class="badge-status">Spreadsheet OS v4.2</span>
+          </div>
+          <div class="menu-bar">
+            <span class="menu-item" onclick="openModal('modal-briefing')">File</span>
+            <span class="menu-item" onclick="resetGame()">Edit (Reset Sol)</span>
+            <span class="menu-item" onclick="switchTab('tab-grid')">View</span>
+            <span class="menu-item" onclick="openModal('modal-build-help')">Insert</span>
+            <span class="menu-item" onclick="openModal('modal-formulas')">Format</span>
+            <span class="menu-item" onclick="switchTab('tab-atmo')">Data</span>
+            <span class="menu-item" onclick="openModal('modal-sheets-setup')" style="color: #1a73e8; font-weight: 600;">⚡ Google Sheets Setup</span>
+            <span class="menu-item" onclick="openModal('modal-briefing')">Help</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn" id="sound-btn" onclick="toggleSound()">🔊 Audio: ON</button>
+        <button class="btn btn-accent" onclick="downloadXlsxFile()">📥 Export .XLSX</button>
+        <button class="btn" onclick="advanceStep(5)">⏩ +5 Sols</button>
+        <button class="btn btn-primary" onclick="advanceStep(1)">▶ ADVANCE SOL</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Ribbon Toolbar & Facility Construction Palette -->
+  <div class="ribbon-toolbar">
+    <div class="ribbon-group">
+      <span style="font-size: 11px; font-weight: 600; color: var(--muted-text);">CONSTRUCT ON CELL:</span>
+      <button class="facility-chip" data-type="SP" onclick="selectFacility('SP')">
+        <span class="facility-badge badge-SP">SP</span> Solar Array (100 RC)
+      </button>
+      <button class="facility-chip" data-type="GD" onclick="selectFacility('GD')">
+        <span class="facility-badge badge-GD">GD</span> Geothermal (250 RC)
+      </button>
+      <button class="facility-chip" data-type="IH" onclick="selectFacility('IH')">
+        <span class="facility-badge badge-IH">IH</span> Ice Drill (150 RC)
+      </button>
+      <button class="facility-chip" data-type="TF" onclick="selectFacility('TF')">
+        <span class="facility-badge badge-TF">TF</span> Gas Factory (200 RC)
+      </button>
+      <button class="facility-chip" data-type="AG" onclick="selectFacility('AG')">
+        <span class="facility-badge badge-AG">AG</span> Algae Dome (300 RC)
+      </button>
+      <button class="facility-chip" data-type="AS" onclick="selectFacility('AS')">
+        <span class="facility-badge badge-AS">AS</span> Scrubber (350 RC)
+      </button>
+      <button class="facility-chip" data-type="HB" onclick="selectFacility('HB')">
+        <span class="facility-badge badge-HB">HB</span> Habitat (400 RC)
+      </button>
+      <button class="facility-chip" data-type="MS" onclick="selectFacility('MS')">
+        <span class="facility-badge badge-MS">MS</span> Shield (600 RC)
+      </button>
+      <button class="facility-chip" data-type="CLEAR" onclick="selectFacility('CLEAR')" style="color: var(--danger);">
+        ✖ Clear Cell
+      </button>
+    </div>
+
+    <div class="ribbon-divider"></div>
+
+    <div class="ribbon-group" style="margin-left: auto;">
+      <span style="font-size: 11px; color: var(--muted-text);">Selected: <strong id="selected-info">E7 (Regolith)</strong></span>
+    </div>
+  </div>
+
+  <!-- Formula Bar -->
+  <div class="formula-bar-container">
+    <div class="cell-coord-box" id="cell-coord">E7</div>
+    <div class="fx-symbol">fx</div>
+    <input type="text" class="formula-input" id="formula-bar" value="=TERRA_CELL(E7, REGOLITH_SECTOR)" readonly>
+  </div>
+
+  <!-- Realtime Incident Ticker -->
+  <div class="incident-ticker">
+    <span id="ticker-text">📡 TELEMETRY ONLINE: Sol 01 in progress. Orbital station Outpost 84 nominal.</span>
+    <span class="ticker-alert" id="ticker-time">SOL 01 // 2184 A.D.</span>
+  </div>
+
+  <!-- Main Workbook Body -->
+  <main class="workbook-body">
+    
+    <!-- TAB 1: 16x16 Surface Grid -->
+    <section class="sheet-view active" id="tab-grid">
+      <div class="grid-wrapper">
+        <table class="spreadsheet-table" id="matrix-table">
+          <!-- Dynamically populated 16x16 grid with A-Q headers and 1-20 rows -->
+        </table>
+      </div>
+
+      <!-- Realtime KPI Deck Under Map -->
+      <div class="kpi-deck">
+        <div class="kpi-card">
+          <div class="kpi-label">Surface Temperature</div>
+          <div class="kpi-value" id="kpi-temp">-65.0°C</div>
+          <div class="kpi-sub">Target: +14.0°C to +18.0°C</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Atmosphere Pressure</div>
+          <div class="kpi-value" id="kpi-press">180.0 hPa</div>
+          <div class="kpi-sub">Target: 980 to 1025 hPa</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Atmospheric Oxygen</div>
+          <div class="kpi-value" id="kpi-o2">0.10%</div>
+          <div class="kpi-sub">Target: 19.5% to 21.5%</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Hydrosphere Volume</div>
+          <div class="kpi-value" id="kpi-water">65 ML</div>
+          <div class="kpi-sub">Target: 800 to 1500 ML</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Net Power Grid</div>
+          <div class="kpi-value" id="kpi-power">+145 MWh</div>
+          <div class="kpi-sub" id="kpi-power-sub">Surplus Available</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Research Credits</div>
+          <div class="kpi-value" id="kpi-credits">620 RC</div>
+          <div class="kpi-sub" id="kpi-credits-yield">+40 RC / Sol</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Colony Population</div>
+          <div class="kpi-value" id="kpi-pop">250</div>
+          <div class="kpi-sub" id="kpi-pop-cap">Capacity: 3,250</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Habitability Index</div>
+          <div class="kpi-value" id="kpi-hab">4.5%</div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="hab-bar" style="width: 4.5%;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: Atmosphere Telemetry -->
+    <section class="sheet-view" id="tab-atmo">
+      <div class="data-table-container">
+        <h2 style="margin-bottom: 8px;">📊 Sheet 2: Atmospheric Telemetry & Chemical Balance</h2>
+        <p style="color: var(--muted-text); margin-bottom: 16px;">
+          Calculated via native spreadsheet thermodynamic equilibrium models.
+        </p>
+
+        <table class="standard-table">
+          <thead>
+            <tr>
+              <th>Atmospheric Parameter</th>
+              <th>Current Reading</th>
+              <th>Target Threshold</th>
+              <th>Spreadsheet Equilibrium Formula</th>
+              <th>Equilibrium Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Mean Surface Temp (T)</strong></td>
+              <td id="atmo-tab-temp" style="font-weight: bold;">-65.0°C</td>
+              <td>+14.0°C to +18.0°C</td>
+              <td><span class="formula-tag">=-65.0 + (CO2_Gases * 0.4) + Geothermal</span></td>
+              <td id="atmo-tab-temp-status" style="color: var(--danger);">LETHAL PERMAFROST</td>
+            </tr>
+            <tr>
+              <td><strong>Atmospheric Pressure (P)</strong></td>
+              <td id="atmo-tab-press" style="font-weight: bold;">180.0 hPa</td>
+              <td>980.0 to 1025.0 hPa</td>
+              <td><span class="formula-tag">=180.0 + SUM(TF_Gases) + Scrubber_N2</span></td>
+              <td id="atmo-tab-press-status" style="color: var(--danger);">NEAR-VACUUM THIN</td>
+            </tr>
+            <tr>
+              <td><strong>Atmospheric Oxygen (O2)</strong></td>
+              <td id="atmo-tab-o2" style="font-weight: bold;">0.10%</td>
+              <td>19.5% to 21.5%</td>
+              <td><span class="formula-tag">=0.10 + (Algae_Domes * 0.35) + Biomes</span></td>
+              <td id="atmo-tab-o2-status" style="color: var(--danger);">ANOXIC SUFFOCATION</td>
+            </tr>
+            <tr>
+              <td><strong>Hydrosphere (Water)</strong></td>
+              <td id="atmo-tab-water" style="font-weight: bold;">65 ML</td>
+              <td>800 to 1500 ML</td>
+              <td><span class="formula-tag">=IceDrills_Yield + IF(Temp > 0, Melt, 0)</span></td>
+              <td id="atmo-tab-water-status" style="color: var(--warning);">LOCKED IN GLACIERS</td>
+            </tr>
+            <tr>
+              <td><strong>Habitability Composite</strong></td>
+              <td id="atmo-tab-hab" style="font-weight: bold;">4.5%</td>
+              <td>100.0%</td>
+              <td><span class="formula-tag">=ROUND(Hab_T + Hab_P + Hab_O2 + Hab_W, 1)</span></td>
+              <td id="atmo-tab-hab-status" style="color: var(--danger);">HOSTILE WASTE</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 style="margin-top: 24px; margin-bottom: 10px;">Gas Partial Pressure Distribution</h3>
+        <table class="standard-table">
+          <thead>
+            <tr>
+              <th>Component Gas</th>
+              <th>Partial Pressure</th>
+              <th>Atmospheric Ratio</th>
+              <th>Primary Production Source</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Carbon Dioxide (CO₂)</td>
+              <td id="gas-co2">170.0 hPa</td>
+              <td>94.4%</td>
+              <td>Native Martian Atmosphere & Gas Factories</td>
+            </tr>
+            <tr>
+              <td>Inert Buffer Nitrogen (N₂)</td>
+              <td id="gas-n2">8.5 hPa</td>
+              <td>4.7%</td>
+              <td>Atmospheric Scrubbers [AS]</td>
+            </tr>
+            <tr>
+              <td>Molecular Oxygen (O₂)</td>
+              <td id="gas-o2">0.18 hPa</td>
+              <td>0.1%</td>
+              <td>Algae Greenhouse Domes [AG]</td>
+            </tr>
+            <tr>
+              <td>Water Vapor (H₂O)</td>
+              <td id="gas-h2o">1.32 hPa</td>
+              <td>0.8%</td>
+              <td>Sublimated Glacial Runoff</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 3: Facilities Database -->
+    <section class="sheet-view" id="tab-facilities">
+      <div class="data-table-container">
+        <h2 style="margin-bottom: 8px;">🏗️ Sheet 3: Facilities Specification Catalog</h2>
+        <p style="color: var(--muted-text); margin-bottom: 16px;">
+          Operational yields, requirements, and cost matrix for surface deployment.
+        </p>
+
+        <table class="standard-table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Facility Type</th>
+              <th>Build Cost</th>
+              <th>Power Delta</th>
+              <th>Water Delta</th>
+              <th>Terraforming Yield</th>
+              <th>Sector Prerequisite</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="facility-badge badge-SP">[SP]</span></td>
+              <td>Solar Collector Array</td>
+              <td>100 RC</td>
+              <td style="color: var(--success); font-weight: bold;">+30 MWh</td>
+              <td>0</td>
+              <td>Primary baseline energy generation</td>
+              <td>Flat Regolith (..)</td>
+            </tr>
+            <tr>
+              <td><span class="facility-badge badge-GD">[GD]</span></td>
+              <td>Geothermal Vent Tap</td>
+              <td>250 RC</td>
+              <td style="color: var(--success); font-weight: bold;">+75 MWh</td>
+              <td>0</td>
+              <td>+0.6°C Heat per Sol</td>
+              <td>Thermal Fissure (**)</td>
+            </tr>
+            <tr>
+              <td><span class="facility-badge badge-IH">[IH]</span></td>
+              <td>Ice Harvester Drill</td>
+              <td>150 RC</td>
+              <td style="color: var(--danger);">-10 MWh</td>
+              <td style="color: var(--accent); font-weight: bold;">+25 ML / Sol</td>
+              <td>Extracts potable water from glaciers</td>
+              <td>Polar Glacier (❄❄)</td>
+            </tr>
+            <tr>
+              <td><span class="facility-badge badge-TF">[TF]</span></td>
+              <td>Thermal Gas Factory</td>
+              <td>200 RC</td>
+              <td style="color: var(--danger);">-25 MWh</td>
+              <td>0</td>
+              <td>+1.5°C Temp, +12.0 hPa Pressure</td>
+              <td>Any Regolith</td>
+            </tr>
+            <tr>
+              <td><span class="facility-badge badge-AG">[AG]</span></td>
+              <td>Algae Greenhouse Dome</td>
+              <td>300 RC</td>
+              <td style="color: var(--danger);">-15 MWh</td>
+              <td style="color: var(--danger);">-8 ML</td>
+              <td>+0.35% O₂ / Sol, +20 Biomass</td>
+              <td>Any Regolith</td>
+            </tr>
+            <tr>
+              <td><span class="facility-badge badge-AS">[AS]</span></td>
+              <td>Atmospheric Scrubber</td>
+              <td>350 RC</td>
+              <td style="color: var(--danger);">-20 MWh</td>
+              <td>0</td>
+              <td>+15.0 hPa Nitrogen buffer balance</td>
+              <td>Any Regolith</td>
+            </tr>
+            <tr>
+              <td><span class="facility-badge badge-HB">[HB]</span></td>
+              <td>Biosphere Habitat Pod</td>
+              <td>400 RC</td>
+              <td style="color: var(--danger);">-20 MWh</td>
+              <td style="color: var(--danger);">-10 ML</td>
+              <td>+1,000 Colonists, +40 RC / Sol</td>
+              <td>Any Regolith</td>
+            </tr>
+            <tr>
+              <td><span class="facility-badge badge-MS">[MS]</span></td>
+              <td>Magnetic Shield Pylon</td>
+              <td>600 RC</td>
+              <td style="color: var(--danger);">-50 MWh</td>
+              <td>0</td>
+              <td>Prevents Coronal Mass Ejection stripping</td>
+              <td>Mountain Ridge (^^)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 4: Incident Telemetry Log -->
+    <section class="sheet-view" id="tab-incidents">
+      <div class="data-table-container">
+        <h2 style="margin-bottom: 8px;">🚨 Sheet 4: Environmental Telemetry & Incident Audit</h2>
+        <p style="color: var(--muted-text); margin-bottom: 16px;">
+          Chronological transmission history from Outpost 84 deep sensors.
+        </p>
+
+        <table class="standard-table" id="incident-history-table">
+          <thead>
+            <tr>
+              <th>Sol</th>
+              <th>D100 Roll</th>
+              <th>Incident Type</th>
+              <th>Severity</th>
+              <th>Environmental Delta & After-Action Report</th>
+            </tr>
+          </thead>
+          <tbody id="incident-log-body">
+            <!-- Dynamic incident logs populated here -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 5: Engineering Manual & DevLog -->
+    <section class="sheet-view" id="tab-manual">
+      <div class="data-table-container">
+        <h2 style="margin-bottom: 8px;">📖 Sheet 5: Engineering Manual & 12-Hour DevLog</h2>
+        
+        <div class="alert-banner">
+          <strong>Mission Architecture:</strong> This game runs 100% inside spreadsheet cell matrices, formulas, and conditional formatting. No traditional graphics engine is used.
+        </div>
+
+        <h3 style="margin-top: 16px; margin-bottom: 8px;">12-Hour Sprint Timeline Summary</h3>
+        <table class="standard-table">
+          <thead>
+            <tr>
+              <th>Sprint</th>
+              <th>Time</th>
+              <th>Focus Area</th>
+              <th>Engineering Milestones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Sprint 1</td>
+              <td>0:00 - 1:30</td>
+              <td>Engine Deconstruction</td>
+              <td>Replaced game loops with discrete cell evaluation buffers and spreadsheet formulas.</td>
+            </tr>
+            <tr>
+              <td>Sprint 2</td>
+              <td>1:30 - 3:00</td>
+              <td>Planetary Thermodynamics</td>
+              <td>Formulated greenhouse gas equilibrium curves in standard Excel/Sheets functions.</td>
+            </tr>
+            <tr>
+              <td>Sprint 3</td>
+              <td>3:00 - 4:45</td>
+              <td>Matrix Radar & Rendering</td>
+              <td>Built 16x16 coordinate map using hexadecimal conditional formatting rules.</td>
+            </tr>
+            <tr>
+              <td>Sprint 4</td>
+              <td>4:45 - 6:15</td>
+              <td>State Loop & Circular Logic</td>
+              <td>Overcame Excel circular reference limits via Apps Script / Dual-Buffer state stepping.</td>
+            </tr>
+            <tr>
+              <td>Sprint 5</td>
+              <td>6:15 - 7:30</td>
+              <td>Colony Economy Balance</td>
+              <td>Calibrated energy blackout penalties (-75% terraforming rate) and life support tiers.</td>
+            </tr>
+            <tr>
+              <td>Sprint 6</td>
+              <td>7:30 - 9:00</td>
+              <td>Incident Telemetry Engine</td>
+              <td>Designed pseudo-random D100 matrix for coronal ejections, dust storms, and meteor strikes.</td>
+            </tr>
+            <tr>
+              <td>Sprint 7</td>
+              <td>9:00 - 10:30</td>
+              <td>Playtesting & Edge Cases</td>
+              <td>Fixed early-game power starvation softlock and calibrated Sol 1-100 victory pacing.</td>
+            </tr>
+            <tr>
+              <td>Sprint 8</td>
+              <td>10:30 - 11:30</td>
+              <td>Web Simulator & Audio Synthesizer</td>
+              <td>Created pixel-accurate Google Sheets web client with Web Audio sound synthesis.</td>
+            </tr>
+            <tr>
+              <td>Sprint 9</td>
+              <td>11:30 - 12:30</td>
+              <td>Export Validation & Packaging</td>
+              <td>Built standard library XLSX binary generator and verified 10+ hour assignment criteria.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Sheet Tabs Bar -->
+  <footer class="tab-bar-container">
+    <div class="tab-control-btn" title="Add Sheet" onclick="alert('Spreadsheet locked: Planetary telemetry sheets are fixed for mission stability.')">+</div>
+    <div class="tab-control-btn" title="Sheet List">≡</div>
+    
+    <div class="sheet-tab active" id="tab-btn-grid" onclick="switchTab('tab-grid')">
+      🌍 Surface Sector Grid
+    </div>
+    <div class="sheet-tab" id="tab-btn-atmo" onclick="switchTab('tab-atmo')">
+      📊 Atmosphere Telemetry
+    </div>
+    <div class="sheet-tab" id="tab-btn-facilities" onclick="switchTab('tab-facilities')">
+      🏗️ Facilities Catalog
+    </div>
+    <div class="sheet-tab" id="tab-btn-incidents" onclick="switchTab('tab-incidents')">
+      🚨 Incident Telemetry
+    </div>
+    <div class="sheet-tab" id="tab-btn-manual" onclick="switchTab('tab-manual')">
+      📖 Engineering Manual & DevLog
+    </div>
+  </footer>
+
+  <!-- Modal: Google Sheets Setup Guide -->
+  <div class="modal-overlay" id="modal-sheets-setup">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>⚡ Play Natively in Real Google Sheets</h3>
+        <button class="modal-close" onclick="closeModal('modal-sheets-setup')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>You can run this game 100% inside your actual Google Drive account using Google Sheets and Google Apps Script:</p>
+        <ol style="margin-left: 20px; margin-top: 8px; margin-bottom: 12px;">
+          <li>Create a blank spreadsheet at <a href="https://sheets.new" target="_blank" style="color: #1a73e8;">sheets.new</a> (or upload <code>Terra_Colony_Simulator.xlsx</code>).</li>
+          <li>Click <strong>Extensions &rarr; Apps Script</strong>.</li>
+          <li>Delete any code in <code>Code.gs</code> and paste the script below.</li>
+          <li>Save the script and refresh your Google Sheet.</li>
+          <li>A custom menu called <strong>🚀 Terra Engine</strong> will appear in the top bar!</li>
+        </ol>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <strong>terra_apps_script.js:</strong>
+          <button class="btn btn-primary" onclick="copyAppsScriptCode()">📋 Copy Apps Script</button>
+        </div>
+
+        <pre class="code-box" id="apps-script-snippet">/* Loading script... */</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Mission Briefing -->
+  <div class="modal-overlay" id="modal-briefing">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>🛰️ PROJECT AETHEL // MISSION DIRECTIVE</h3>
+        <button class="modal-close" onclick="closeModal('modal-briefing')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Commander:</strong> You are stationed aboard Outpost 84 in geostationary orbit above Terra Prime.</p>
+        <p style="margin-top: 8px;">Your objective is complete planetary terraforming before Sol 100.</p>
+        
+        <h4 style="margin-top: 14px; margin-bottom: 6px;">VICTORY THRESHOLDS:</h4>
+        <ul style="margin-left: 20px; line-height: 1.8;">
+          <li><strong>Temperature:</strong> Reach at least +14.0°C (Melt glaciers, allow liquid rain)</li>
+          <li><strong>Atmospheric Pressure:</strong> Reach at least 980.0 hPa (Earth normal ~1013 hPa)</li>
+          <li><strong>Atmospheric Oxygen:</strong> Reach at least 19.5% O₂ (Breathable air without masks)</li>
+          <li><strong>Hydrosphere:</strong> At least 800 ML of liquid oceans</li>
+          <li><strong>Colony Population:</strong> Expand colony to at least 5,000 citizens</li>
+        </ul>
+
+        <h4 style="margin-top: 14px; margin-bottom: 6px;">RULES OF SURVIVAL:</h4>
+        <ul style="margin-left: 20px; line-height: 1.8;">
+          <li><strong>Never let Net Energy drop below 0:</strong> Power blackouts slash terraforming efficiency by 75% and cause colonist casualties.</li>
+          <li><strong>Geothermal Drills [GD]</strong> can only be built over Thermal Fissures (<code>**</code>).</li>
+          <li><strong>Ice Harvesters [IH]</strong> can only be placed on Glaciers (<code>❄❄</code>).</li>
+          <li><strong>Magnetic Shields [MS]</strong> must be placed on Mountain Ridges (<code>^^</code>) to deflect solar flares.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Build Help -->
+  <div class="modal-overlay" id="modal-build-help">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>🏗️ Construction Protocol</h3>
+        <button class="modal-close" onclick="closeModal('modal-build-help')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>To deploy structures on the planetary surface:</p>
+        <ol style="margin-left: 20px; margin-top: 10px; line-height: 1.8;">
+          <li>Click any cell on the 16x16 grid to select it (or use arrow keys).</li>
+          <li>Click one of the facility buttons in the ribbon toolbar (or press hotkeys 1-8).</li>
+          <li>Your Research Credits (RC) will be deducted, and the facility code will be written to the cell.</li>
+          <li>Click <strong>▶ ADVANCE SOL</strong> to process the environmental cycle!</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Formulas Help -->
+  <div class="modal-overlay" id="modal-formulas">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>📐 Mathematical Formulation</h3>
+        <button class="modal-close" onclick="closeModal('modal-formulas')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Every metric is computed via real spreadsheet equations:</p>
+        <div class="code-box">
+T_eq = -65.0 + (CO2_Gases * 0.40) + (Geothermal_Heat * 0.60)
+P_eq = 180.0 + (TF_Factories * 12.0) + (Scrubbers * 15.0)
+O2_eq = 0.10 + (Algae_Domes * 0.35) + (Living_Biomes * 0.05)
+Habitability% = MIN(100, ROUND(Score_T + Score_P + Score_O2 + Score_W))
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * TERRA // OUTPOST 84 ENGINE SCRIPT
+     */
+    
+    // Web Audio Synthesizer for Spreadsheet UI Sound FX
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.08, gainVal = 0.05) {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {
+        console.warn("Audio error:", e);
+      }
+    }
+
+    function soundClick() { playTone(880, 'sine', 0.04, 0.03); }
+    function soundBuild() { playTone(520, 'triangle', 0.12, 0.08); setTimeout(() => playTone(650, 'triangle', 0.1, 0.08), 80); }
+    function soundTurn() { playTone(440, 'sawtooth', 0.15, 0.04); setTimeout(() => playTone(880, 'sawtooth', 0.2, 0.04), 120); }
+    function soundAlert() { playTone(240, 'sawtooth', 0.3, 0.1); setTimeout(() => playTone(200, 'sawtooth', 0.3, 0.1), 250); }
+    function soundVictory() {
+      [523, 659, 783, 1046].forEach((f, i) => {
+        setTimeout(() => playTone(f, 'sine', 0.35, 0.09), i * 140);
+      });
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById('sound-btn');
+      btn.textContent = soundEnabled ? '🔊 Audio: ON' : '🔇 Audio: OFF';
+      if (soundEnabled) soundClick();
+    }
+
+    // Planetary State Object
+    const state = {
+      sol: 1,
+      temp: -65.0,
+      press: 180.0,
+      o2: 0.10,
+      water: 65,
+      power: 145,
+      credits: 620,
+      pop: 250,
+      habitability: 4.5,
+      selectedCoord: { r: 6, c: 7 }, // E7 default
+      selectedFacility: null,
+      history: [],
+      // 16x16 Terrain Map (B to Q, rows 5 to 20)
+      map: [
+        ["❄❄","❄❄","❄❄","..","..","^^","^^","..","..","..","..","..","^^","❄❄","❄❄","❄❄"],
+        ["❄❄","❄❄","..","..","..","^^","..","..","..","..","..","..","..","..","❄❄","❄❄"],
+        ["❄❄","..","..","~~","~~","..","..","..","**","..","..","..","..","..","..","❄❄"],
+        ["..","..","~~","~~","~~","~~","..","..","..","..","..","..","^^","^^","..",".."],
+        ["..","..","~~","~~","~~","..","..","..","..","..","..","..","^^","..","..",".."],
+        ["..","^^","..","~~","..","..","..","[SP]","..","..","..","..","..","..","..",".."],
+        ["..","^^","..","..","..","..","[HB]","[HB]","..","..","..","..","..","**","..",".."],
+        ["..","..","..","..","..","..","[HB]","[AG]","..","..","..","..","..","..","..",".."],
+        ["..","..","..","..","..","..","[AG]","[AG]","..","..","..","..","..","..","..",".."],
+        ["..","..","..","..","..","..","..","..","..","..","~~","~~","..","..","..",".."],
+        ["..","..","..","**","..","..","..","..","..","~~","~~","~~","~~","..","..",".."],
+        ["..","^^","..","..","..","..","..","..","..","~~","~~","~~","~~","..","..",".."],
+        ["..","^^","^^","..","..","..","..","..","..","..","~~","~~","..","..","..",".."],
+        ["❄❄","..","..","..","..","..","..","..","**","..","..","..","..","..","..","❄❄"],
+        ["❄❄","❄❄","..","..","..","^^","..","..","..","..","..","^^","..","..","❄❄","❄❄"],
+        ["❄❄","❄❄","❄❄","..","..","^^","^^","..","..","..","..","..","^^","❄❄","❄❄","❄❄"]
+      ],
+      // Base natural terrain under structures
+      baseTerrain: []
+    };
+
+    // Initialize base terrain mirror
+    for (let r = 0; r < 16; r++) {
+      state.baseTerrain[r] = [];
+      for (let c = 0; c < 16; c++) {
+        const val = state.map[r][c];
+        state.baseTerrain[r][c] = val.startsWith('[') ? '..' : val;
+      }
+    }
+
+    const facilitySpecs = {
+      SP: { name: "Solar Array", cost: 100, power: 30, water: 0, req: ["..", "^^"] },
+      GD: { name: "Geothermal Drill", cost: 250, power: 75, water: 0, req: ["**"] },
+      IH: { name: "Ice Harvester", cost: 150, power: -10, water: 25, req: ["❄❄"] },
+      TF: { name: "Thermal Gas Factory", cost: 200, power: -25, water: 0, req: ["..", "~~"] },
+      AG: { name: "Algae Greenhouse", cost: 300, power: -15, water: -8, req: ["..", "~~"] },
+      AS: { name: "Atmospheric Scrubber", cost: 350, power: -20, water: 0, req: ["..", "^^"] },
+      HB: { name: "Habitat Pod", cost: 400, power: -20, water: -10, req: ["..", "~~"] },
+      MS: { name: "Magnetic Shield", cost: 600, power: -50, water: 0, req: ["^^"] }
+    };
+
+    const COL_LETTERS = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q"];
+
+    function getCoordString(r, c) {
+      return `${COL_LETTERS[c + 1]}${r + 5}`;
+    }
+
+    // Render 16x16 Matrix Table
+    function renderMatrix() {
+      const table = document.getElementById('matrix-table');
+      table.innerHTML = '';
+
+      // Header row
+      const thead = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+      const cornerTh = document.createElement('th');
+      cornerTh.className = 'corner-header';
+      headerRow.appendChild(cornerTh);
+
+      for (let c = 1; c <= 16; c++) {
+        const th = document.createElement('th');
+        th.className = 'col-header';
+        th.textContent = COL_LETTERS[c];
+        headerRow.appendChild(th);
+      }
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+
+      // Body rows
+      const tbody = document.createElement('tbody');
+      for (let r = 0; r < 16; r++) {
+        const tr = document.createElement('tr');
+        const rowTh = document.createElement('th');
+        rowTh.className = 'row-header';
+        rowTh.textContent = r + 5;
+        tr.appendChild(rowTh);
+
+        for (let c = 0; c < 16; c++) {
+          const td = document.createElement('td');
+          td.className = 'grid-cell';
+          td.dataset.r = r;
+          td.dataset.c = c;
+
+          const val = state.map[r][c];
+          applyCellStyling(td, val, r, c);
+
+          if (r === state.selectedCoord.r && c === state.selectedCoord.c) {
+            td.classList.add('selected');
+          }
+
+          td.addEventListener('click', () => {
+            selectCell(r, c);
+          });
+
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody);
+    }
+
+    function applyCellStyling(td, val, r, c) {
+      td.className = 'grid-cell';
+      td.innerHTML = '';
+
+      if (val.startsWith('[')) {
+        const code = val.replace('[', '').replace(']', '');
+        const badge = document.createElement('span');
+        badge.className = `facility-badge badge-${code}`;
+        badge.textContent = `[${code}]`;
+        td.appendChild(badge);
+
+        const base = state.baseTerrain[r][c];
+        if (base === '**') td.classList.add('terrain-fissure');
+        else if (base === '^^') td.classList.add('terrain-ridge');
+        else td.classList.add('terrain-regolith');
+      } else {
+        td.textContent = val;
+        if (val === '..') td.classList.add('terrain-regolith');
+        else if (val === '^^') td.classList.add('terrain-ridge');
+        else if (val === '~~') td.classList.add('terrain-basin');
+        else if (val === '**') td.classList.add('terrain-fissure');
+        else if (val === '❄❄') td.classList.add('terrain-glacier');
+        else if (val === '≈≈') td.classList.add('terrain-ocean');
+        else if (val === '♣♣') td.classList.add('terrain-biome');
+      }
+    }
+
+    function selectCell(r, c) {
+      soundClick();
+      state.selectedCoord = { r, c };
+
+      document.querySelectorAll('.grid-cell.selected').forEach(el => el.classList.remove('selected'));
+      const activeTd = document.querySelector(`.grid-cell[data-r="${r}"][data-c="${c}"]`);
+      if (activeTd) activeTd.classList.add('selected');
+
+      const coordStr = getCoordString(r, c);
+      document.getElementById('cell-coord').textContent = coordStr;
+
+      const currentVal = state.map[r][c];
+      const baseVal = state.baseTerrain[r][c];
+      const formulaEl = document.getElementById('formula-bar');
+      const infoEl = document.getElementById('selected-info');
+
+      if (currentVal.startsWith('[')) {
+        const spec = facilitySpecs[currentVal.replace('[','').replace(']','')];
+        formulaEl.value = `=FACILITY_LOC("${currentVal}", ${coordStr}, BASE="${baseVal}")`;
+        infoEl.innerHTML = `<strong>${coordStr}</strong>: ${spec ? spec.name : currentVal} (Base: ${baseVal})`;
+      } else {
+        let terrainDesc = "Barren Regolith";
+        if (currentVal === '^^') terrainDesc = "Mountain Ridge (Shields Allowed)";
+        else if (currentVal === '~~') terrainDesc = "Ancient Basin (Gas/Algae Site)";
+        else if (currentVal === '**') terrainDesc = "Geothermal Fissure (Tappable for GD)";
+        else if (currentVal === '❄❄') terrainDesc = "Polar Glacier (Ice Drills Allowed)";
+        else if (currentVal === '≈≈') terrainDesc = "Liquid Ocean (Warming Thaw)";
+        else if (currentVal === '♣♣') terrainDesc = "Terraformed Biome (Photosynthetic)";
+
+        formulaEl.value = `=TERRA_SECTOR(${coordStr}, "${currentVal}", "${terrainDesc}")`;
+        infoEl.innerHTML = `<strong>${coordStr}</strong>: ${terrainDesc}`;
+      }
+
+      // If a facility tool is selected, auto-build on click
+      if (state.selectedFacility) {
+        buildFacilityOnSelected(state.selectedFacility);
+      }
+    }
+
+    function selectFacility(type) {
+      soundClick();
+      document.querySelectorAll('.facility-chip').forEach(btn => btn.classList.remove('active'));
+
+      if (state.selectedFacility === type) {
+        state.selectedFacility = null;
+        return;
+      }
+
+      state.selectedFacility = type;
+      const chip = document.querySelector(`.facility-chip[data-type="${type}"]`);
+      if (chip) chip.classList.add('active');
+
+      if (state.selectedCoord) {
+        buildFacilityOnSelected(type);
+      }
+    }
+
+    function buildFacilityOnSelected(type) {
+      const { r, c } = state.selectedCoord;
+      const base = state.baseTerrain[r][c];
+      const coordStr = getCoordString(r, c);
+
+      if (type === 'CLEAR') {
+        soundBuild();
+        state.map[r][c] = base;
+        renderMatrix();
+        selectCell(r, c);
+        recalcTelemetry();
+        return;
+      }
+
+      const spec = facilitySpecs[type];
+      if (!spec) return;
+
+      // Credit check
+      if (state.credits < spec.cost) {
+        soundAlert();
+        alert(`Insufficient Research Credits! Need ${spec.cost} RC, but you only have ${state.credits} RC.`);
+        return;
+      }
+
+      // Terrain check
+      if (!spec.req.includes(base)) {
+        soundAlert();
+        alert(`Invalid Sector Terrain! ${spec.name} requires terrain [${spec.req.join(' or ')}], but sector ${coordStr} is [${base}].`);
+        return;
+      }
+
+      soundBuild();
+      state.credits -= spec.cost;
+      state.map[r][c] = `[${type}]`;
+
+      renderMatrix();
+      selectCell(r, c);
+      recalcTelemetry();
+      updateDashboard();
+
+      setTicker(`Deployed ${spec.name} on ${coordStr}. Deducted ${spec.cost} RC.`);
+    }
+
+    // Mathematical Recalculation Engine
+    function recalcTelemetry() {
+      let counts = { SP: 0, GD: 0, IH: 0, TF: 0, AG: 0, AS: 0, HB: 0, MS: 0, biomes: 0, water: 0, ice: 0 };
+      
+      for (let r = 0; r < 16; r++) {
+        for (let c = 0; c < 16; c++) {
+          const val = state.map[r][c];
+          if (val === '[SP]') counts.SP++;
+          else if (val === '[GD]') counts.GD++;
+          else if (val === '[IH]') counts.IH++;
+          else if (val === '[TF]') counts.TF++;
+          else if (val === '[AG]') counts.AG++;
+          else if (val === '[AS]') counts.AS++;
+          else if (val === '[HB]') counts.HB++;
+          else if (val === '[MS]') counts.MS++;
+          else if (val === '♣♣') counts.biomes++;
+          else if (val === '≈≈') counts.water++;
+          else if (val === '❄❄') counts.ice++;
+        }
+      }
+
+      const powerProduced = (counts.SP * 30) + (counts.GD * 75);
+      const powerConsumed = (counts.IH * 10) + (counts.TF * 25) + (counts.AG * 15) + (counts.AS * 20) + (counts.HB * 20) + (counts.MS * 50);
+      state.power = powerProduced - powerConsumed;
+
+      const popCap = 250 + (counts.HB * 1000);
+      document.getElementById('kpi-pop-cap').textContent = `Capacity: ${popCap.toLocaleString()}`;
+    }
+
+    function advanceStep(steps = 1) {
+      initAudio();
+      soundTurn();
+
+      for (let i = 0; i < steps; i++) {
+        executeOneSol();
+      }
+
+      renderMatrix();
+      selectCell(state.selectedCoord.r, state.selectedCoord.c);
+      updateDashboard();
+      saveGame();
+    }
+
+    function executeOneSol() {
+      state.sol += 1;
+
+      let counts = { SP: 0, GD: 0, IH: 0, TF: 0, AG: 0, AS: 0, HB: 0, MS: 0, biomes: 0, water: 0, ice: 0, regolith: 0 };
+      for (let r = 0; r < 16; r++) {
+        for (let c = 0; c < 16; c++) {
+          const val = state.map[r][c];
+          if (val === '[SP]') counts.SP++;
+          else if (val === '[GD]') counts.GD++;
+          else if (val === '[IH]') counts.IH++;
+          else if (val === '[TF]') counts.TF++;
+          else if (val === '[AG]') counts.AG++;
+          else if (val === '[AS]') counts.AS++;
+          else if (val === '[HB]') counts.HB++;
+          else if (val === '[MS]') counts.MS++;
+          else if (val === '♣♣') counts.biomes++;
+          else if (val === '≈≈') counts.water++;
+          else if (val === '❄❄') counts.ice++;
+          else if (val === '..') counts.regolith++;
+        }
+      }
+
+      // Power calculation
+      const powerProduced = (counts.SP * 30) + (counts.GD * 75);
+      const powerConsumed = (counts.IH * 10) + (counts.TF * 25) + (counts.AG * 15) + (counts.AS * 20) + (counts.HB * 20) + (counts.MS * 50);
+      state.power = powerProduced - powerConsumed;
+
+      const powerEfficiency = (state.power >= 0) ? 1.0 : 0.25;
+
+      // Temperature Delta
+      const tempDelta = ((counts.GD * 0.6) + (counts.TF * 1.5)) * powerEfficiency;
+      state.temp = Math.round((state.temp + tempDelta) * 10) / 10;
+
+      // Pressure Delta
+      const pressDelta = ((counts.TF * 12.0) + (counts.AS * 15.0)) * powerEfficiency;
+      state.press = Math.round((state.press + pressDelta) * 10) / 10;
+
+      // Oxygen Delta
+      const o2Delta = ((counts.AG * 0.35) + (counts.biomes * 0.05)) * powerEfficiency;
+      state.o2 = Math.round((state.o2 + o2Delta) * 100) / 100;
+
+      // Water Delta
+      const waterHarvest = (counts.IH * 25) * powerEfficiency;
+      const waterConsumed = (counts.AG * 8) + (counts.HB * 5);
+      const waterMelt = (state.temp > 0) ? Math.min(counts.ice * 3, 20) : 0;
+      state.water = Math.max(0, Math.round(state.water + waterHarvest - waterConsumed + waterMelt));
+
+      // Population Growth
+      const popCap = 250 + (counts.HB * 1000);
+      if (state.power >= 0 && state.o2 >= 0.1) {
+        if (state.pop < popCap) {
+          state.pop = Math.min(popCap, state.pop + 120 + Math.round(state.habitability * 8));
+        }
+      } else {
+        state.pop = Math.max(50, state.pop - 75); // blackout casualties
+      }
+
+      // Credits Yield
+      const creditGain = (counts.HB * 40) + Math.round(state.pop * 0.08) + 20;
+      state.credits += creditGain;
+
+      // Habitability Calculation
+      const habTemp = (state.temp >= -10 && state.temp <= 30) ? 25 : Math.max(0, 25 - Math.abs(state.temp - 15) * 0.5);
+      const habPress = (state.press >= 800 && state.press <= 1200) ? 25 : Math.max(0, 25 * (state.press / 1000));
+      const habO2 = (state.o2 >= 18.0 && state.o2 <= 23.0) ? 30 : Math.max(0, 30 * (state.o2 / 20));
+      const habWater = (state.water >= 500) ? 20 : Math.max(0, 20 * (state.water / 500));
+      state.habitability = Math.min(100, Math.round((habTemp + habPress + habO2 + habWater) * 10) / 10);
+
+      // Dynamic Grid Transformation (Ice melts, biomes bloom)
+      if (state.temp > 0) {
+        for (let r = 0; r < 16; r++) {
+          for (let c = 0; c < 16; c++) {
+            if (state.map[r][c] === '❄❄' && Math.random() < 0.25) {
+              state.map[r][c] = '≈≈';
+              state.baseTerrain[r][c] = '≈≈';
+              break;
+            }
+          }
+        }
+      }
+
+      if (state.o2 > 5.0 && state.water > 200) {
+        for (let r = 0; r < 16; r++) {
+          for (let c = 0; c < 16; c++) {
+            if (state.map[r][c] === '..' && Math.random() < 0.2) {
+              state.map[r][c] = '♣♣';
+              state.baseTerrain[r][c] = '♣♣';
+              break;
+            }
+          }
+        }
+      }
+
+      // Incident Roll
+      processIncidentRoll(counts);
+
+      // Check Victory
+      if (state.o2 >= 20.0 && state.temp >= 14.0 && state.press >= 980.0 && state.pop >= 5000) {
+        soundVictory();
+        alert(`🎉 HISTORIC TRIUMPH ON SOL ${state.sol}!\n\nTerra Prime has been fully terraformed!\n- Breathable Atmosphere (O2: ${state.o2}%)\n- Warm Temperate Climate (${state.temp}°C)\n- Dense Atmosphere (${state.press} hPa)\n- Colony Population: ${state.pop.toLocaleString()}\n\nOutpost 84 has fulfilled the dream of Project Aethel.`);
+      }
+    }
+
+    function processIncidentRoll(counts) {
+      const roll = Math.floor(Math.random() * 100) + 1;
+      let title = "Nominal Orbit";
+      let severity = "LOW";
+      let report = "Atmospheric equilibrium stable. Sensor arrays clean.";
+
+      if (roll <= 18) {
+        title = "Coronal Mass Ejection";
+        if (counts.MS > 0) {
+          severity = "MITIGATED";
+          report = `Solar radiation surge deflected by ${counts.MS} Magnetic Shield Pylon(s)!`;
+        } else {
+          severity = "HIGH";
+          const stripped = 25;
+          state.press = Math.max(100, Math.round((state.press - stripped) * 10) / 10);
+          report = `Unshielded solar storm stripped ${stripped} hPa atmosphere! Build [MS] on Mountain Ridge (^^).`;
+          soundAlert();
+        }
+      } else if (roll >= 85 && roll <= 93) {
+        title = "Colonist R&D Breakthrough";
+        severity = "POSITIVE";
+        const grant = 250;
+        state.credits += grant;
+        report = `Colony bio-engineers discovered algae mutation: +${grant} RC grant award!`;
+      } else if (roll > 93) {
+        title = "Cryo-Meteor Impact";
+        severity = "MEDIUM";
+        state.water += 75;
+        report = "Water-rich icy meteor impacted polar basin! Added +75 ML fresh water reserves.";
+      }
+
+      logIncident(state.sol, roll, title, severity, report);
+      setTicker(`Sol ${state.sol}: ${title} (${severity}) - ${report}`);
+    }
+
+    function logIncident(sol, roll, type, severity, report) {
+      state.history.unshift({ sol, roll, type, severity, report });
+      if (state.history.length > 50) state.history.pop();
+
+      const tbody = document.getElementById('incident-log-body');
+      if (!tbody) return;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>Sol ${sol}</strong></td>
+        <td>D100 [${roll}]</td>
+        <td><strong>${type}</strong></td>
+        <td style="color: ${severity === 'HIGH' ? 'var(--danger)' : (severity === 'POSITIVE' ? 'var(--success)' : 'var(--muted-text)')}; font-weight: bold;">${severity}</td>
+        <td>${report}</td>
+      `;
+      tbody.prepend(tr);
+    }
+
+    function setTicker(msg) {
+      document.getElementById('ticker-text').textContent = msg;
+      document.getElementById('ticker-time').textContent = `SOL ${String(state.sol).padStart(2, '0')} // 2184 A.D.`;
+    }
+
+    function updateDashboard() {
+      // Main KPI deck
+      document.getElementById('kpi-temp').textContent = `${state.temp > 0 ? '+' : ''}${state.temp.toFixed(1)}°C`;
+      document.getElementById('kpi-press').textContent = `${state.press.toFixed(1)} hPa`;
+      document.getElementById('kpi-o2').textContent = `${state.o2.toFixed(2)}%`;
+      document.getElementById('kpi-water').textContent = `${state.water} ML`;
+      
+      const powerEl = document.getElementById('kpi-power');
+      powerEl.textContent = `${state.power >= 0 ? '+' : ''}${state.power} MWh`;
+      powerEl.style.color = state.power >= 0 ? 'var(--success)' : 'var(--danger)';
+      document.getElementById('kpi-power-sub').textContent = state.power >= 0 ? 'Surplus Available' : '⚠️ BROWNOUT ACTIVE (-75%)';
+
+      document.getElementById('kpi-credits').textContent = `${state.credits} RC`;
+      document.getElementById('kpi-pop').textContent = state.pop.toLocaleString();
+      document.getElementById('kpi-hab').textContent = `${state.habitability.toFixed(1)}%`;
+      document.getElementById('hab-bar').style.width = `${Math.min(100, state.habitability)}%`;
+
+      // Atmo Tab data
+      const tabTemp = document.getElementById('atmo-tab-temp');
+      if (tabTemp) {
+        tabTemp.textContent = `${state.temp > 0 ? '+' : ''}${state.temp.toFixed(1)}°C`;
+        document.getElementById('atmo-tab-press').textContent = `${state.press.toFixed(1)} hPa`;
+        document.getElementById('atmo-tab-o2').textContent = `${state.o2.toFixed(2)}%`;
+        document.getElementById('atmo-tab-water').textContent = `${state.water} ML`;
+        document.getElementById('atmo-tab-hab').textContent = `${state.habitability.toFixed(1)}%`;
+
+        document.getElementById('atmo-tab-temp-status').textContent = state.temp < -20 ? "LETHAL PERMAFROST" : (state.temp > 25 ? "OVERHEATING" : "BALMY HABITABLE");
+        document.getElementById('atmo-tab-temp-status').style.color = state.temp >= 14 ? "var(--success)" : "var(--danger)";
+
+        document.getElementById('atmo-tab-press-status').textContent = state.press < 600 ? "THIN NEAR-VACUUM" : (state.press > 1100 ? "HEAVY AIR" : "EARTH NORMAL (1 ATM)");
+        document.getElementById('atmo-tab-press-status').style.color = state.press >= 980 ? "var(--success)" : "var(--danger)";
+
+        document.getElementById('atmo-tab-o2-status').textContent = state.o2 < 10.0 ? "ANOXIC SUFFOCATION" : (state.o2 > 24.0 ? "HYPEROXIC DANGER" : "BREATHABLE AIR");
+        document.getElementById('atmo-tab-o2-status').style.color = state.o2 >= 19.5 ? "var(--success)" : "var(--danger)";
+      }
+    }
+
+    // Tab Navigation
+    function switchTab(tabId) {
+      soundClick();
+      document.querySelectorAll('.sheet-view').forEach(view => view.classList.remove('active'));
+      document.querySelectorAll('.sheet-tab').forEach(tab => tab.classList.remove('active'));
+
+      const targetView = document.getElementById(tabId);
+      if (targetView) targetView.classList.add('active');
+
+      const btnMap = {
+        'tab-grid': 'tab-btn-grid',
+        'tab-atmo': 'tab-btn-atmo',
+        'tab-facilities': 'tab-btn-facilities',
+        'tab-incidents': 'tab-btn-incidents',
+        'tab-manual': 'tab-btn-manual'
+      };
+
+      const targetBtn = document.getElementById(btnMap[tabId]);
+      if (targetBtn) targetBtn.classList.add('active');
+    }
+
+    // Modal Controls
+    function openModal(modalId) {
+      soundClick();
+      const modal = document.getElementById(modalId);
+      if (modal) modal.style.display = 'flex';
+      if (modalId === 'modal-sheets-setup') {
+        loadAppsScriptSnippet();
+      }
+    }
+
+    function closeModal(modalId) {
+      soundClick();
+      const modal = document.getElementById(modalId);
+      if (modal) modal.style.display = 'none';
+    }
+
+    // Fetch and display Google Apps Script
+    async function loadAppsScriptSnippet() {
+      const codeBox = document.getElementById('apps-script-snippet');
+      try {
+        const res = await fetch('terra_apps_script.js');
+        if (res.ok) {
+          const text = await res.text();
+          codeBox.textContent = text;
+        } else {
+          codeBox.textContent = "// File terra_apps_script.js is in the repository root.\n// Open terra_apps_script.js in your editor to copy.";
+        }
+      } catch (e) {
+        codeBox.textContent = "// terra_apps_script.js can be opened directly from the repository.";
+      }
+    }
+
+    function copyAppsScriptCode() {
+      const snippet = document.getElementById('apps-script-snippet').textContent;
+      navigator.clipboard.writeText(snippet).then(() => {
+        soundClick();
+        alert("Google Apps Script copied to clipboard! Paste it into Extensions > Apps Script in Google Sheets.");
+      }).catch(err => {
+        alert("Please select and copy the code text manually.");
+      });
+    }
+
+    // Instant .xlsx Download
+    function downloadXlsxFile() {
+      soundClick();
+      const link = document.createElement('a');
+      link.href = 'Terra_Colony_Simulator.xlsx';
+      link.download = 'Terra_Colony_Simulator.xlsx';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTicker("Downloaded Terra_Colony_Simulator.xlsx to local drive.");
+    }
+
+    // Keyboard Shortcuts (Hotkeys 1-8 to construct, Space to advance turn)
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        advanceStep(1);
+      } else if (e.key === '1') selectFacility('SP');
+      else if (e.key === '2') selectFacility('GD');
+      else if (e.key === '3') selectFacility('IH');
+      else if (e.key === '4') selectFacility('TF');
+      else if (e.key === '5') selectFacility('AG');
+      else if (e.key === '6') selectFacility('AS');
+      else if (e.key === '7') selectFacility('HB');
+      else if (e.key === '8') selectFacility('MS');
+      else if (e.key === 'x' || e.key === 'Delete') selectFacility('CLEAR');
+      else if (e.key === 'ArrowUp' && state.selectedCoord.r > 0) {
+        e.preventDefault();
+        selectCell(state.selectedCoord.r - 1, state.selectedCoord.c);
+      } else if (e.key === 'ArrowDown' && state.selectedCoord.r < 15) {
+        e.preventDefault();
+        selectCell(state.selectedCoord.r + 1, state.selectedCoord.c);
+      } else if (e.key === 'ArrowLeft' && state.selectedCoord.c > 0) {
+        e.preventDefault();
+        selectCell(state.selectedCoord.r, state.selectedCoord.c - 1);
+      } else if (e.key === 'ArrowRight' && state.selectedCoord.c < 15) {
+        e.preventDefault();
+        selectCell(state.selectedCoord.r, state.selectedCoord.c + 1);
+      }
+    });
+
+    // Save and Load Game in localStorage
+    function saveGame() {
+      try {
+        localStorage.setItem('terra_prime_save', JSON.stringify({
+          sol: state.sol,
+          temp: state.temp,
+          press: state.press,
+          o2: state.o2,
+          water: state.water,
+          credits: state.credits,
+          pop: state.pop,
+          map: state.map,
+          baseTerrain: state.baseTerrain
+        }));
+      } catch (e) {}
+    }
+
+    function loadGame() {
+      try {
+        const saved = localStorage.getItem('terra_prime_save');
+        if (saved) {
+          const data = JSON.parse(saved);
+          state.sol = data.sol || 1;
+          state.temp = data.temp ?? -65.0;
+          state.press = data.press ?? 180.0;
+          state.o2 = data.o2 ?? 0.10;
+          state.water = data.water ?? 65;
+          state.credits = data.credits ?? 620;
+          state.pop = data.pop ?? 250;
+          if (data.map) state.map = data.map;
+          if (data.baseTerrain) state.baseTerrain = data.baseTerrain;
+        }
+      } catch (e) {}
+    }
+
+    function resetGame() {
+      if (confirm("Reset planetary terraforming simulation to Sol 01? All structures will revert to default.")) {
+        localStorage.removeItem('terra_prime_save');
+        window.location.reload();
+      }
+    }
+
+    // Startup
+    window.addEventListener('DOMContentLoaded', () => {
+      loadGame();
+      renderMatrix();
+      selectCell(state.selectedCoord.r, state.selectedCoord.c);
+      recalcTelemetry();
+      updateDashboard();
+      logIncident(1, 14, "Orbital Insertion", "NOMINAL", "Outpost 84 successfully achieved geostationary orbit.");
+    });
+  </script>
+</body>
+</html>
