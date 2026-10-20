@@ -183,21 +183,35 @@ def create_terra_xlsx(output_path="Terra_Colony_Simulator.xlsx"):
 </worksheet>"""
 
     # SHEET 2: Atmosphere Telemetry & Planetary Physics Formulas
-    formula_e5 = '=0.1 + (COUNTIF(Surface_Sector_Grid!B5:Q20, "*AG*") * 0.35)'
+    formula_e3 = '=-65.0 + (COUNTIF(Surface_Sector_Grid!B5:Q20, "*GD*") * 0.6) + (COUNTIF(Surface_Sector_Grid!B5:Q20, "*TF*") * 1.5) + (B10 * 0.05)'
+    formula_e4 = '=180.0 + (COUNTIF(Surface_Sector_Grid!B5:Q20, "*TF*") * 12.0) + (COUNTIF(Surface_Sector_Grid!B5:Q20, "*AS*") * 15.0)'
+    formula_e5 = '=0.10 + (COUNTIF(Surface_Sector_Grid!B5:Q20, "*AG*") * 0.35) + (COUNTIF(Surface_Sector_Grid!B5:Q20, "♣♣") * 0.05)'
+    formula_e6 = '=65.0 + (COUNTIF(Surface_Sector_Grid!B5:Q20, "*IH*") * 25.0) + IF(B3 > 0, (COUNTIF(Surface_Sector_Grid!B5:Q20, "≈≈") * 10.0), 0)'
+    formula_e7 = '=MIN(100, ROUND(IF(AND(B3>=-10, B3<=30), 25, MAX(0, 25 - ABS(B3-15)*0.5)) + IF(B4>=800, 25, 25*(B4/1000)) + IF(B5>=18, 30, 30*(B5/20)) + IF(B6>=500, 20, 20*(B6/500)), 1))'
+    
+    formula_b10 = '=MAX(0, B4 - B11 - B12 - B13)'
+    formula_c10 = '=ROUND(B10/B$4*100, 1)'
+    formula_b11 = '=8.5 + (COUNTIF(Surface_Sector_Grid!B5:Q20, "*AS*") * 15.0)'
+    formula_c11 = '=ROUND(B11/B$4*100, 1)'
+    formula_b12 = '=ROUND(B4 * (B5 / 100), 2)'
+    formula_c12 = '=ROUND(B12/B$4*100, 1)'
+    formula_b13 = '=ROUND(1.32 + IF(B3 > 0, B3 * 0.35, 0), 2)'
+    formula_c13 = '=ROUND(B13/B$4*100, 1)'
+
     sheet2_rows = [
         f'<row r="1" ht="28">{make_cell("A1", "TERRA // ATMOSPHERIC TELEMETRY & PLANETARY MODELS", 5)}</row>',
         f'<row r="2">{make_cell("A2", "PARAMETER", 2)} {make_cell("B2", "CURRENT VALUE", 2)} {make_cell("C2", "UNIT", 2)} {make_cell("D2", "TARGET RANGE", 2)} {make_cell("E2", "STATUS / FORMULA", 2)} {make_cell("F2", "HABITABILITY WEIGHT", 2)}</row>',
-        f'<row r="3">{make_cell("A3", "Surface Temperature", 6)} {make_cell("B3", -65.0, 4)} {make_cell("C3", "°C", 4)} {make_cell("D3", "+14.0 to +18.0", 4)} {make_cell("E3", "=-65.0 + (B4*0.04) + 2.5", 4, is_formula=True)} {make_cell("F3", "25%", 4)}</row>',
-        f'<row r="4">{make_cell("A4", "Atmospheric Pressure", 6)} {make_cell("B4", 180.0, 4)} {make_cell("C4", "hPa", 4)} {make_cell("D4", "980.0 to 1025.0", 4)} {make_cell("E4", "=180 + SUM(B9:B12)", 4, is_formula=True)} {make_cell("F4", "25%", 4)}</row>',
+        f'<row r="3">{make_cell("A3", "Surface Temperature", 6)} {make_cell("B3", -65.0, 4)} {make_cell("C3", "°C", 4)} {make_cell("D3", "+14.0 to +18.0", 4)} {make_cell("E3", formula_e3, 4, is_formula=True)} {make_cell("F3", "25%", 4)}</row>',
+        f'<row r="4">{make_cell("A4", "Atmospheric Pressure", 6)} {make_cell("B4", 180.0, 4)} {make_cell("C4", "hPa", 4)} {make_cell("D4", "980.0 to 1025.0", 4)} {make_cell("E4", formula_e4, 4, is_formula=True)} {make_cell("F4", "25%", 4)}</row>',
         f'<row r="5">{make_cell("A5", "Atmospheric Oxygen", 6)} {make_cell("B5", 0.1, 4)} {make_cell("C5", "%", 4)} {make_cell("D5", "19.5% to 21.5%", 4)} {make_cell("E5", formula_e5, 4, is_formula=True)} {make_cell("F5", "30%", 4)}</row>',
-        f'<row r="6">{make_cell("A6", "Hydrosphere Volume", 6)} {make_cell("B6", 65.0, 4)} {make_cell("C6", "Mega-Liters", 4)} {make_cell("D6", "800.0 to 1500.0", 4)} {make_cell("E6", "=65.0 + IF(B3>0, (B3*12), 0)", 4, is_formula=True)} {make_cell("F6", "20%", 4)}</row>',
-        f'<row r="7">{make_cell("A7", "HABITABILITY INDEX", 1)} {make_cell("B7", 4.2, 1)} {make_cell("C7", "%", 1)} {make_cell("D7", "100.0%", 1)} {make_cell("E7", "=ROUND(IF(B3>-10,25,0)+IF(B4>800,25,0)+IF(B5>18,30,0)+IF(B6>600,20,0),1)", 1, is_formula=True)} {make_cell("F7", "OVERALL", 1)}</row>',
+        f'<row r="6">{make_cell("A6", "Hydrosphere Volume", 6)} {make_cell("B6", 65.0, 4)} {make_cell("C6", "Mega-Liters", 4)} {make_cell("D6", "800.0 to 1500.0", 4)} {make_cell("E6", formula_e6, 4, is_formula=True)} {make_cell("F6", "20%", 4)}</row>',
+        f'<row r="7">{make_cell("A7", "HABITABILITY INDEX", 1)} {make_cell("B7", 4.2, 1)} {make_cell("C7", "%", 1)} {make_cell("D7", "100.0%", 1)} {make_cell("E7", formula_e7, 1, is_formula=True)} {make_cell("F7", "OVERALL", 1)}</row>',
         '<row r="8"/>',
         f'<row r="9">{make_cell("A9", "GAS COMPOSITION INVENTORY", 2)} {make_cell("B9", "PARTIAL PRESSURE (hPa)", 2)} {make_cell("C9", "RATIO (%)", 2)} {make_cell("D9", "PRIMARY SOURCE", 2)}</row>',
-        f'<row r="10">{make_cell("A10", "Carbon Dioxide (CO2)")} {make_cell("B10", 170.0)} {make_cell("C10", 94.4)} {make_cell("D10", "Native Martian Basin")}</row>',
-        f'<row r="11">{make_cell("A11", "Nitrogen Buffer (N2)")} {make_cell("B11", 8.5)} {make_cell("C11", 4.7)} {make_cell("D11", "Atmospheric Scrubbers")}</row>',
-        f'<row r="12">{make_cell("A12", "Oxygen Gas (O2)")} {make_cell("B12", 0.18)} {make_cell("C12", 0.1)} {make_cell("D12", "Cyanobacteria Greenhouses")}</row>',
-        f'<row r="13">{make_cell("A13", "Water Vapor (H2O)")} {make_cell("B13", 1.32)} {make_cell("C13", 0.8)} {make_cell("D13", "Polar Ice Sublimation")}</row>',
+        f'<row r="10">{make_cell("A10", "Carbon Dioxide (CO2)")} {make_cell("B10", formula_b10, 4, is_formula=True)} {make_cell("C10", formula_c10, 4, is_formula=True)} {make_cell("D10", "Native Martian Basin & Gas Factories")}</row>',
+        f'<row r="11">{make_cell("A11", "Nitrogen Buffer (N2)")} {make_cell("B11", formula_b11, 4, is_formula=True)} {make_cell("C11", formula_c11, 4, is_formula=True)} {make_cell("D11", "Atmospheric Scrubbers")}</row>',
+        f'<row r="12">{make_cell("A12", "Oxygen Gas (O2)")} {make_cell("B12", formula_b12, 4, is_formula=True)} {make_cell("C12", formula_c12, 4, is_formula=True)} {make_cell("D12", "Cyanobacteria Greenhouses & Biomes")}</row>',
+        f'<row r="13">{make_cell("A13", "Water Vapor (H2O)")} {make_cell("B13", formula_b13, 4, is_formula=True)} {make_cell("C13", formula_c13, 4, is_formula=True)} {make_cell("D13", "Polar Ice Sublimation & Ocean Thaw")}</row>',
     ]
     sheet2_xml = f"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">

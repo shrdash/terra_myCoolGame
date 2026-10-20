@@ -285,6 +285,18 @@ function advanceSol() {
   
   atmoSheet.getRange("B6").setValue(currentWater);
   atmoSheet.getRange("B7").setValue(habitability);
+
+  // Write dynamic gas partial pressures (Dalton's Law of Partial Pressures)
+  var pTotal = Math.max(1.0, currentPress);
+  var pO2 = Math.min(pTotal, Math.max(0.01, (currentO2 / 100) * pTotal));
+  var pH2O = Math.min(pTotal * 0.12, Math.max(0.5, (currentWater / 1500) * 20 + Math.max(0, currentTemp * 0.25)));
+  var pN2 = Math.min(pTotal - pO2 - pH2O, Math.max(8.5, 8.5 + (counts.AS * 18.0)));
+  var pCO2 = Math.max(0, pTotal - pO2 - pN2 - pH2O);
+
+  atmoSheet.getRange("B10:C10").setValues([[Math.round(pCO2 * 10) / 10, Math.round((pCO2 / pTotal) * 1000) / 10]]);
+  atmoSheet.getRange("B11:C11").setValues([[Math.round(pN2 * 10) / 10, Math.round((pN2 / pTotal) * 1000) / 10]]);
+  atmoSheet.getRange("B12:C12").setValues([[Math.round(pO2 * 100) / 100, Math.round((pO2 / pTotal) * 1000) / 10]]);
+  atmoSheet.getRange("B13:C13").setValues([[Math.round(pH2O * 100) / 100, Math.round((pH2O / pTotal) * 1000) / 10]]);
   
   gridSheet.getRange("B22").setValue("POPULATION: " + currentPop);
   gridSheet.getRange("D22").setValue("ENERGY: " + (netPower >= 0 ? "+" : "") + netPower + " MWh");

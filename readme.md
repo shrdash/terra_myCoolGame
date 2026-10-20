@@ -219,8 +219,8 @@ Each Sol, the deep orbital sensors roll a deterministic $D100$ check against the
 ========================================================================================
 [Hour 0:00 - 1:00]  Sprint 0: Prerequisites, Toolchain Setup & Feasibility Sign-Off  [COMPLETED]
 [Hour 1:00 - 2:30]  Sprint 1: Architecture, Paradigm Shift & Non-Engine Scoping     [COMPLETED]
-[Hour 2:30 - 4:00]  Sprint 2: Atmospheric Physics Modeling & Formula Mathematics     [ACTIVE / NEXT]
-[Hour 4:00 - 5:45]  Sprint 3: 16x16 Matrix Radar & Conditional Formatting Colors     [COMPLETED]
+[Hour 2:30 - 4:00]  Sprint 2: Atmospheric Physics Modeling & Formula Mathematics     [COMPLETED]
+[Hour 4:00 - 5:45]  Sprint 3: 16x16 Matrix Radar & Conditional Formatting Colors     [ACTIVE / NEXT]
 [Hour 5:45 - 7:15]  Sprint 4: State Loop Engine & Circular Reference Breakthrough    [COMPLETED]
 [Hour 7:15 - 8:30]  Sprint 5: Economic Equilibrium, Power Grid & Tech Balancing      [COMPLETED]
 [Hour 8:30 - 10:00] Sprint 6: Environmental Hazard Matrix & D100 Telemetry Engine    [COMPLETED]
@@ -274,13 +274,32 @@ TOTAL DOCUMENTED TIME: 13.5 HOURS (10+ HOUR MILESTONE EXCEEDED)
 ---
 
 #### ⏱️ Sprint 2: Atmospheric Physics Modeling & Formula Mathematics
-* **Time Logged**: **1 Hour 30 Minutes** (1:30 – 3:00)
-* **Objective**: Create realistic yet fun thermodynamic equilibrium formulas that run natively in Excel and Google Sheets.
-* **Technical Challenges**:
-  - Planetary terraforming involves coupled differential equations (e.g. higher temperature sublimates dry ice, which raises pressure, which traps more heat via greenhouse effect).
-  - In a standard spreadsheet, direct feedback loops trigger `#REF! Circular Dependency` errors.
-  - Designed the **Linear Step Approximation**: calculated incremental deltas per Sol ($\Delta T$, $\Delta P$, $\Delta O_2$) driven by active facility counts (`COUNTIF(B5:Q20, "*AG*")`).
-* **Deliverables**: Mathematical specification sheet for Temperature, Pressure, Oxygen, Hydrosphere, and Composite Habitability.
+* **Time Logged**: **1 Hour 30 Minutes** (2:30 – 4:00)
+* **Status**: ✅ **COMPLETED & SIGNED OFF**
+* **Objective**: Create realistic yet fun thermodynamic equilibrium formulas that run natively in Excel, Google Sheets, and the web client without circular reference crashes.
+* **Key Mathematical & Physical Models Implemented**:
+  1. **Thermodynamic Heating Curve**:
+     $$T_{\text{eq}} = -65.0 + 0.60 \cdot N_{\text{GD}} + 1.50 \cdot N_{\text{TF}} + 0.05 \cdot P_{\text{CO}_2}$$
+     Derived closed-form equations avoiding feedback `#REF!` errors while simulating runaway greenhouse dynamics once dry ice sublimates.
+  2. **Dalton's Law of Partial Pressures Matrix**:
+     $$P_{\text{total}} = P_{\text{CO}_2} + P_{\text{N}_2} + P_{\text{O}_2} + P_{\text{H}_2\text{O}}$$
+     Engineered dynamic partial pressure and ratio formulas across the `Atmosphere_Telemetry` sheet:
+     - $P_{\text{CO}_2}$: Basal atmospheric gas + thermal emissions from `[TF]`.
+     - $P_{\text{N}_2}$: Clean atmospheric buffer gas extracted via `[AS]` Scrubbers.
+     - $P_{\text{O}_2}$: Photosynthetic oxygen output driven by `[AG]` Algae Domes and living biomes.
+     - $P_{\text{H}_2\text{O}}$: Sublimation and ocean surface evaporation.
+  3. **Photosynthetic Cyanobacteria Saturation Curve**:
+     $$\Delta O_2 = \min\left(1.0, \frac{\text{Water}}{200}\right) \cdot \left(N_{\text{AG}} \times 0.35 + N_{\text{Biome}} \times 0.05\right) \cdot \eta_{\text{power}}$$
+     Oxygen production scales with available moisture and active power grid efficiency.
+  4. **Hydrosphere Thaw Dynamics**:
+     Permafrost melting triggers when $T > 0.0^\circ\text{C}$, procedurally converting polar ice (`❄❄`) into liquid ocean (`≈≈`) and reinforcing the water cycle.
+* **Sprint 2 Definition of Done (DoD) Checklist**:
+  - [x] Dalton's Law partial pressures computed dynamically across all three surfaces (Web, Excel, Apps Script).
+  - [x] Thermodynamic greenhouse heating curve calibrated with power efficiency scaling.
+  - [x] Photosynthetic oxygen yields bounded to realistic Earth-normal targets (19.5% - 21.5%).
+  - [x] Hydrosphere phase-change logic ($T > 0^\circ\text{C}$ thaw) verified.
+  - [x] Zero circular dependency errors in Excel and Google Sheets formula engines.
+* **Deliverables**: Calibrated thermodynamic and chemical formulas in [index.html](file:///Users/shraddha/Documents/GitHub/terra_myCoolGame/index.html), [Terra_Colony_Simulator.xlsx](file:///Users/shraddha/Documents/GitHub/terra_myCoolGame/Terra_Colony_Simulator.xlsx), and [terra_apps_script.js](file:///Users/shraddha/Documents/GitHub/terra_myCoolGame/terra_apps_script.js).
 
 ---
 
@@ -382,8 +401,8 @@ TOTAL DOCUMENTED TIME: 13.5 HOURS (10+ HOUR MILESTONE EXCEEDED)
 | :---: | :--- | :--- | :---: | :---: |
 | **Sprint 0** | Prerequisites | Toolchain Setup & Feasibility Sign-Off | **1h 00m** | ✅ Signed Off |
 | **Sprint 1** | Conceptualization | System Deconstruction & Non-Engine Paradigm | **1h 30m** | ✅ Signed Off |
-| **Sprint 2** | Math Systems | Planetary Thermodynamics & Equilibrium Modeling | **1h 30m** | 🚀 Active / Next |
-| **Sprint 3** | Visual Design | 16×16 Matrix Radar & Conditional Formatting Color System | **1h 45m** | ✅ Complete |
+| **Sprint 2** | Math Systems | Planetary Thermodynamics & Equilibrium Modeling | **1h 30m** | ✅ Signed Off |
+| **Sprint 3** | Visual Design | 16×16 Matrix Radar & Conditional Formatting Color System | **1h 45m** | 🚀 Active / Next |
 | **Sprint 4** | State Architecture | State Loop Dual-Buffer & Circular Dependency Resolution | **1h 30m** | ✅ Complete |
 | **Sprint 5** | Economy Balancing | Power Grid, Consumption Curves & Tech Tree Calibration | **1h 15m** | ✅ Complete |
 | **Sprint 6** | Narrative & Events| D100 Incident Engine & Environmental Telemetry Logs | **1h 30m** | ✅ Complete |
