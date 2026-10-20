@@ -723,7 +723,7 @@
 
   <!-- Formula Bar -->
   <div class="formula-bar-container">
-    <div class="cell-coord-box" id="cell-coord">E7</div>
+    <input type="text" class="cell-coord-box" id="cell-coord" value="E7" maxlength="4" spellcheck="false" title="Enter cell coordinate (e.g. B5, Q20) and hit Enter">
     <div class="fx-symbol">fx</div>
     <input type="text" class="formula-input" id="formula-bar" value="=TERRA_CELL(E7, REGOLITH_SECTOR)" readonly>
   </div>
@@ -1416,7 +1416,8 @@ Habitability% = MIN(100, ROUND(Score_T + Score_P + Score_O2 + Score_W))
       if (activeTd) activeTd.classList.add('selected');
 
       const coordStr = getCoordString(r, c);
-      document.getElementById('cell-coord').textContent = coordStr;
+      const coordInput = document.getElementById('cell-coord');
+      if (coordInput) coordInput.value = coordStr;
 
       const currentVal = state.map[r][c];
       const baseVal = state.baseTerrain[r][c];
@@ -1444,6 +1445,24 @@ Habitability% = MIN(100, ROUND(Score_T + Score_P + Score_O2 + Score_W))
       if (state.selectedFacility) {
         buildFacilityOnSelected(state.selectedFacility);
       }
+    }
+    
+    function jumpToCoord(str) {
+      if (!str) return;
+      const match = str.trim().toUpperCase().match(/^([B-Q])(\d{1,2})$/);
+      if (match) {
+        const colLetter = match[1];
+        const rowNum = parseInt(match[2], 10);
+        const colIdx = COL_LETTERS.indexOf(colLetter) - 1;
+        const rowIdx = rowNum - 5;
+        if (colIdx >= 0 && colIdx < 16 && rowIdx >= 0 && rowIdx < 16) {
+          selectCell(rowIdx, colIdx);
+          return;
+        }
+      }
+      soundAlert();
+      const coordInput = document.getElementById('cell-coord');
+      if (coordInput) coordInput.value = getCoordString(state.selectedCoord.r, state.selectedCoord.c);
     }
 
     function selectFacility(type) {
@@ -1904,6 +1923,20 @@ Habitability% = MIN(100, ROUND(Score_T + Score_P + Score_O2 + Score_W))
       recalcTelemetry();
       updateDashboard();
       logIncident(1, 14, "Orbital Insertion", "NOMINAL", "Outpost 84 successfully achieved geostationary orbit.");
+
+      const coordInput = document.getElementById('cell-coord');
+      if (coordInput) {
+        coordInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            jumpToCoord(coordInput.value);
+            coordInput.blur();
+          }
+        });
+        coordInput.addEventListener('change', () => {
+          jumpToCoord(coordInput.value);
+        });
+      }
     });
   </script>
 </body>
